@@ -1,5 +1,3 @@
-# mysql_connector_app.py
-
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLineEdit, QPushButton, QMessageBox
 import mysql.connector
