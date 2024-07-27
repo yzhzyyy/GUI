@@ -4,8 +4,6 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QTableWidget, QTa
     QSizePolicy
 from PyQt5.QtCore import Qt
 from itertools import combinations
-import mysql.connector
-from mysql.connector import Error
 import time
 
 
@@ -61,20 +59,20 @@ class TableContentWindow(QWidget):
             for col_idx, item in enumerate(row):
                 self.data_table.setItem(row_idx, col_idx, QTableWidgetItem(str(item)))
 
-        # Set alternating row colors
+        # Set alternating row colors 启用交替行颜色显示
         self.data_table.setAlternatingRowColors(True)
 
         # Adjust column width
         header = self.data_table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
 
-        # Populate uniqueness ratio table
+        # Populate uniqueness ratio table 显示 uniqueness ratio
         all_combinations = [combo for length in range(1, len(self.columns) + 1) for combo in
                             combinations(self.columns, length)]
 
         self.ur_table.setColumnCount(3)
         self.ur_table.setRowCount(len(all_combinations))
-        self.ur_table.setHorizontalHeaderLabels(['Key', 'Uniqueness Ratio', 'Time'])
+        self.ur_table.setHorizontalHeaderLabels(['Key', 'Uniqueness Ratio', 'Running Time'])
 
         for row_idx, perm in enumerate(all_combinations):
             ratio, exec_time = self.pmax_uniqueness_ratio_sql(cursor, self.table, perm)
@@ -110,28 +108,8 @@ class TableContentWindow(QWidget):
             }
         """)
 
-        self.data_table.cellEntered.connect(self.on_data_table_hover)
-        self.ur_table.cellEntered.connect(self.on_ur_table_hover)
-
         cursor.close()
 
-    def on_data_table_hover(self, row, column):
-        if self.previous_hovered_row != -1 and self.previous_hovered_row != row:
-            for col in range(self.data_table.columnCount()):
-                self.data_table.item(self.previous_hovered_row, col).setBackground(
-                    Qt.white if self.previous_hovered_row % 2 == 0 else Qt.lightGray)
-        self.previous_hovered_row = row
-        for col in range(self.data_table.columnCount()):
-            self.data_table.item(row, col).setBackground(Qt.lightGray)
-
-    def on_ur_table_hover(self, row, column):
-        if self.previous_hovered_row != -1 and self.previous_hovered_row != row:
-            for col in range(self.ur_table.columnCount()):
-                self.ur_table.item(self.previous_hovered_row, col).setBackground(
-                    Qt.white if self.previous_hovered_row % 2 == 0 else Qt.lightGray)
-        self.previous_hovered_row = row
-        for col in range(self.ur_table.columnCount()):
-            self.ur_table.item(row, col).setBackground(Qt.lightGray)
 
     def pmax_uniqueness_ratio_sql(self, cursor, table_name, columns):
         if not columns:
