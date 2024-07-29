@@ -7,7 +7,7 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 import mysql.connector
 from mysql.connector import Error
-from database_selection_window import DatabaseSelectionWindow
+from main_window import DatabaseSelectionWindow
 
 
 class MySQLConnectorApp(QWidget):
@@ -67,13 +67,13 @@ class MySQLConnectorApp(QWidget):
         container.setLayout(container_layout)
 
         self.host_input = QLineEdit(self)
-        self.host_input.setPlaceholderText('Enter Host')
+        self.host_input.setPlaceholderText('Enter Host Name')
         self.style_input(self.host_input)
         self.host_input.setAttribute(Qt.WA_MacShowFocusRect, 0)  # Remove macOS focus rect
         container_layout.addWidget(self.host_input)
 
         self.user_input = QLineEdit(self)
-        self.user_input.setPlaceholderText('Enter User')
+        self.user_input.setPlaceholderText('Enter User Name')
         self.style_input(self.user_input)
         self.user_input.setAttribute(Qt.WA_MacShowFocusRect, 0)  # Remove macOS focus rect
         container_layout.addWidget(self.user_input)
@@ -147,12 +147,12 @@ class MySQLConnectorApp(QWidget):
             )
 
             if self.connection.is_connected():
-                self.open_database_selection_window()
+                self.open_database_selection_window(user)
         except Error as e:
             QMessageBox.critical(self, 'Connection Error', f'Error connecting to MySQL database: {e}')
 
-    def open_database_selection_window(self):
-        self.db_selection_window = DatabaseSelectionWindow(self.connection, self, self.user_input)
+    def open_database_selection_window(self, username):
+        self.db_selection_window = DatabaseSelectionWindow(self.connection, self, username)
         self.db_selection_window.show()
         self.hide()
 

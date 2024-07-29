@@ -1,7 +1,11 @@
 import sys
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt, QEvent, QTimer
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem,
+    QLabel, QFrame, QSplitter, QSizePolicy, QSpacerItem, QPushButton
+)
 from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt
+from home_page import HomePage
 import mysql.connector
 
 class DatabaseSelectionWindow(QWidget):
@@ -34,7 +38,7 @@ class DatabaseSelectionWindow(QWidget):
             }
             QListWidget::item {
                 height: 40px;
-                padding-left: 20px;
+                padding-left: 10px;
                 outline: none;
                 border: none;
             }
@@ -47,10 +51,15 @@ class DatabaseSelectionWindow(QWidget):
                 color: #ffffff;
             }
         """)
-        self.nav_list.addItem(self.create_nav_item("Home", "icons/home.png"))
-        self.nav_list.addItem(self.create_nav_item("Widgets", "icons/database.png"))
-        self.nav_list.addItem(self.create_nav_item("TableView", "icons/table.png"))
-        self.nav_list.addItem(self.create_nav_item("Blank", "icons/key_analysis.png"))
+        self.home_item = self.create_nav_item("Home", "icons/home.png")
+        self.widgets_item = self.create_nav_item("Widgets", "icons/database.png")
+        self.tableview_item = self.create_nav_item("TableView", "icons/table.png")
+        self.blank_item = self.create_nav_item("Blank", "icons/key_analysis.png")
+
+        self.nav_list.addItem(self.home_item)
+        self.nav_list.addItem(self.widgets_item)
+        self.nav_list.addItem(self.tableview_item)
+        self.nav_list.addItem(self.blank_item)
         self.nav_list.itemClicked.connect(self.on_nav_item_clicked)
         nav_layout.addWidget(self.nav_list)
 
@@ -59,9 +68,27 @@ class DatabaseSelectionWindow(QWidget):
 
         # Add user info at the bottom
         user_info_label = QLabel(f"User: {self.username}\nDatabase: {self.connection.database}")
+        print(self.username)
         user_info_label.setAlignment(Qt.AlignCenter)
         user_info_label.setStyleSheet("color: #aaaaaa;")
         nav_layout.addWidget(user_info_label)
+
+        # Add logout button at the bottom
+        logout_button = QPushButton('Logout', self)
+        logout_button.setStyleSheet("""
+                    QPushButton {
+                        background-color: rgba(165, 137, 120, 0.8);
+                        color: #ffffff;
+                        border: none;
+                        border-radius: 10px;
+                        padding: 10px;
+                    }
+                    QPushButton:hover {
+                        background-color: rgba(87, 71, 64, 0.8);
+                    }
+                """)
+        logout_button.clicked.connect(self.logout)
+        nav_layout.addWidget(logout_button)
 
         splitter.addWidget(nav_widget)
 
@@ -80,17 +107,38 @@ class DatabaseSelectionWindow(QWidget):
         main_layout.addWidget(splitter)
         self.setLayout(main_layout)
 
+        # Set default selection to Home
+        self.nav_list.setCurrentItem(self.home_item)
+        self.on_nav_item_clicked(self.home_item)
+
     def create_nav_item(self, text, icon_path):
         item = QListWidgetItem(text)
         item.setIcon(QIcon(icon_path))
         return item
 
+    def logout(self):
+        self.previous_window.show()
+        self.close()
+
     def on_nav_item_clicked(self, item):
+        for i in range(self.content_layout.count()):
+            widget = self.content_layout.itemAt(i).widget()
+            if widget:
+                widget.deleteLater()
         if item.text() == "Home":
-            self.content_label.setText("Home Page")
+            self.content_layout.addWidget(HomePage(self.connection, self.content_area))
         elif item.text() == "Widgets":
-            self.content_label.setText("Widgets Page")
+            self.content_label = QLabel("Widgets Page", self.content_area)
+            self.content_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #574740;")
+            self.content_layout.addWidget(self.content_label)
         elif item.text() == "TableView":
-            self.content_label.setText("Table View Page")
+            self.content_label = QLabel("Table View Page", self.content_area)
+            self.content_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #574740;")
+            self.content_layout.addWidget(self.content_label)
         elif item.text() == "Blank":
-            self.content_label.setText("Blank Page")
+            self.content_label = QLabel("Blank Page", self.content_area)
+            self.content_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #574740;")
+            self.content_layout.addWidget(self.content_label)
+
+
+
