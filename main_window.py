@@ -19,7 +19,7 @@ class DatabaseSelectionWindow(QWidget):
     def initUI(self):
         self.setWindowTitle('MySQL Connector Dashboard')
         self.setGeometry(100, 100, 1000, 600)
-        self.setStyleSheet("background-color: #F9FBF5; color: #574740;")
+        self.setStyleSheet("background-color: #b9b7a8; color: #574740;")
 
         main_layout = QHBoxLayout(self)
 
@@ -40,7 +40,7 @@ class DatabaseSelectionWindow(QWidget):
                 height: 40px;
                 padding-left: 10px;
                 outline: none;
-                border: none;
+                border-radius: 20px;
             }
             QListWidget::item:hover {
                 background-color: #a58978;
@@ -70,7 +70,7 @@ class DatabaseSelectionWindow(QWidget):
         user_info_label = QLabel(f"User: {self.username}\nDatabase: {self.connection.database}")
         print(self.username)
         user_info_label.setAlignment(Qt.AlignCenter)
-        user_info_label.setStyleSheet("color: #aaaaaa;")
+        user_info_label.setStyleSheet("color: #ffffff;")
         nav_layout.addWidget(user_info_label)
 
         # Add logout button at the bottom
@@ -80,7 +80,7 @@ class DatabaseSelectionWindow(QWidget):
                         background-color: rgba(165, 137, 120, 0.8);
                         color: #ffffff;
                         border: none;
-                        border-radius: 10px;
+                        border-radius: 20px;
                         padding: 10px;
                     }
                     QPushButton:hover {
@@ -95,7 +95,7 @@ class DatabaseSelectionWindow(QWidget):
         # Create the right content area
         self.content_area = QFrame()
         self.content_layout = QVBoxLayout(self.content_area)
-        self.content_area.setStyleSheet("background-color: #FFFFFF;")
+        self.content_area.setStyleSheet("background-color: #FFFFFF; border-radius: 30px;")
         self.content_label = QLabel("Welcome to MySQL Connector Dashboard", self.content_area)
         self.content_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #574740;")
         self.content_layout.addWidget(self.content_label)

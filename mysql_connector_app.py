@@ -14,6 +14,10 @@ class MySQLConnectorApp(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.default_host = 'localhost'
+        self.default_user = 'root'
+        self.default_password = '123456'
+        self.populate_defaults()
 
     def initUI(self):
         self.setWindowTitle('MySQL Connector')
@@ -133,6 +137,11 @@ class MySQLConnectorApp(QWidget):
                 color: #574740;
             }
         """)
+
+    def populate_defaults(self):
+        self.host_input.setText(self.default_host)
+        self.user_input.setText(self.default_user)
+        self.password_input.setText(self.default_password)
 
     def connect_to_db(self):
         host = self.host_input.text()

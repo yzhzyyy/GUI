@@ -1,7 +1,7 @@
 # home_page.py
 
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QComboBox, QPushButton, QHBoxLayout, QMessageBox, QFrame
+    QWidget, QVBoxLayout, QLabel, QComboBox, QPushButton, QHBoxLayout, QMessageBox, QFrame, QLineEdit
 )
 from PyQt5.QtCore import Qt
 
@@ -15,8 +15,18 @@ class HomePage(QWidget):
     def initUI(self):
         main_layout = QVBoxLayout(self)
 
+        # Title Frame
+        title_frame = QFrame(self)
+        title_frame.setFrameShape(QFrame.StyledPanel)
+        title_frame.setStyleSheet("""
+                QFrame {
+                    border: none;
+                }
+            """)
+        title_frame.setFixedHeight(40)
 
-        title_layout = QHBoxLayout()
+        title_layout = QHBoxLayout(title_frame)
+        title_layout.setContentsMargins(0, 0, 0, 0)
 
         # back button
         back_button = QPushButton(" << ", self)
@@ -24,8 +34,7 @@ class HomePage(QWidget):
             QPushButton {
                 color: rgba(165, 137, 120, 0.8);
                 font-size: 24px;
-                padding: 0px 10px;
-                border: none
+                border: none;
             }
             QPushButton:hover {
                 color: rgba(87, 71, 64, 0.8);
@@ -36,34 +45,74 @@ class HomePage(QWidget):
 
         # Title
         title_label = QLabel("Home Page", self)
-        title_label.setAlignment(Qt.AlignLeft)  # 字体局中显示
+        title_label.setAlignment(Qt.AlignLeft)
         title_label.setStyleSheet("""
             font-size: 24px;
             font-weight: bold;
-            color: #574740;
+            color: rgba(165, 137, 120, 0.8);
             padding: 5px 0px;
         """)
         title_label.setFixedHeight(40)
-        title_layout.setContentsMargins(0, 0, 0, 0)  # Remove margins for title_layout
+        title_layout.setContentsMargins(0, 0, 0, 0)
         title_layout.addWidget(back_button)
         title_layout.addWidget(title_label)
         title_layout.addStretch()
-        main_layout.addLayout(title_layout)
+        main_layout.addWidget(title_frame)
 
         # Database information display
         db_info_frame = QFrame(self)
         db_info_frame.setFrameShape(QFrame.StyledPanel)
         db_info_layout = QHBoxLayout(db_info_frame)
+        db_info_layout.setContentsMargins(0, 0, 0, 0)
 
         db_list_frame = QFrame(self)
         db_list_frame.setFrameShape(QFrame.StyledPanel)
+        db_list_frame.setStyleSheet("""
+            QFrame {
+                background-color: #f5f5f5;
+                border-radius: 5px;
+                padding: 10px;
+                border: none;
+            }
+        """)
         db_list_layout = QVBoxLayout(db_list_frame)
+        db_list_layout.setContentsMargins(0, 0, 0, 0)
+        db_list_layout.setSpacing(10)
+
         db_list_label = QLabel("Database name", self)
-        db_list_label.setStyleSheet("font-size: 16px; color: #574740;")
+        db_list_label.setStyleSheet("""
+            font-size: 20px;
+            font-weight: bold;
+            color: rgba(165, 137, 120, 0.8);
+            margin: 5px 40px;
+        """)
+        db_list_label.setFixedHeight(40)
         db_list_layout.addWidget(db_list_label)
 
-        self.db_list_combo = QComboBox(self)
-        db_list_layout.addWidget(self.db_list_combo)
+        self.db_buttons = []
+        cursor = self.connection.cursor()
+        cursor.execute("SHOW DATABASES")
+        databases = cursor.fetchall()
+        for db in databases:
+            db_button = QPushButton(db[0], self)
+            db_button.setStyleSheet("""
+                QPushButton {
+                    background-color: #a58978;
+                    color: #ffffff;
+                    border: none;
+                    border-radius: 5px;
+                    padding: 5px 40px;
+                    margin: 5px 10px;
+                }
+                QPushButton:hover {
+                    background-color: #574740;
+                }
+            """)
+            db_button.clicked.connect(self.on_db_button_clicked)
+            self.db_buttons.append(db_button)
+            db_list_layout.addWidget(db_button)
+
+        cursor.close()
 
         db_info_layout.addWidget(db_list_frame)
 
@@ -71,12 +120,17 @@ class HomePage(QWidget):
         select_db_frame = QFrame(self)
         select_db_frame.setFrameShape(QFrame.StyledPanel)
         select_db_layout = QVBoxLayout(select_db_frame)
-        select_db_label = QLabel("Please select a database:", self)
-        select_db_label.setStyleSheet("font-size: 16px; color: #574740;")
+        select_db_label = QLabel("Selected database:", self)
+        select_db_label.setStyleSheet("""
+            font-size: 20px;
+            font-weight: bold;
+            color: rgba(165, 137, 120, 0.8);
+            padding: 0px;
+        """)
         select_db_layout.addWidget(select_db_label)
 
-        self.db_combo_box = QComboBox(self)
-        select_db_layout.addWidget(self.db_combo_box)
+        self.db_textbox = QLineEdit(self)
+        select_db_layout.addWidget(self.db_textbox)
 
         connect_button = QPushButton("Connect", self)
         connect_button.clicked.connect(self.connect_to_db)
@@ -98,18 +152,13 @@ class HomePage(QWidget):
 
         main_layout.addWidget(db_info_frame)
 
-        self.populate_databases()
-
-    def populate_databases(self):
-        cursor = self.connection.cursor()
-        cursor.execute("SHOW DATABASES")
-        databases = cursor.fetchall()
-        self.db_list_combo.addItems([db[0] for db in databases])
-        self.db_combo_box.addItems([db[0] for db in databases])
-        cursor.close()
+    def on_db_button_clicked(self):
+        sender = self.sender()
+        selected_db = sender.text()
+        self.db_textbox.setText(selected_db)
 
     def connect_to_db(self):
-        selected_db = self.db_combo_box.currentText()
+        selected_db = self.db_textbox.text()
         QMessageBox.information(self, "Database Selected", f"You have selected {selected_db} database.")
         # Here you can implement further actions, such as updating the connection to use the selected database
 
