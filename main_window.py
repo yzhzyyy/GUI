@@ -1,10 +1,12 @@
 import sys
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem,
-    QLabel, QFrame, QSplitter, QSizePolicy, QSpacerItem, QPushButton
+    QLabel, QFrame, QSplitter, QSizePolicy, QSpacerItem, QPushButton, QMessageBox
 )
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
+
+from table_view_page import TableViewPage
 from home_page import HomePage
 import mysql.connector
 
@@ -14,6 +16,7 @@ class DatabaseSelectionWindow(QWidget):
         self.connection = connection
         self.previous_window = previous_window
         self.username = username
+        self.selected_db = None
         self.initUI()
 
     def initUI(self):
@@ -131,19 +134,24 @@ class DatabaseSelectionWindow(QWidget):
             if widget:
                 widget.deleteLater()
         if item.text() == "Home":
-            self.content_layout.addWidget(HomePage(self.connection, self.content_area))
+            home_page = HomePage(self.connection, self.content_area)
+            home_page.db_selected.connect(self.set_selected_db)  # Connect signal
+            self.content_layout.addWidget(home_page)
         elif item.text() == "Widgets":
             self.content_label = QLabel("Widgets Page", self.content_area)
             self.content_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #574740;")
             self.content_layout.addWidget(self.content_label)
         elif item.text() == "TableView":
-            self.content_label = QLabel("Table View Page", self.content_area)
-            self.content_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #574740;")
-            self.content_layout.addWidget(self.content_label)
+            if self.selected_db:
+                self.content_layout.addWidget(TableViewPage(self.connection, self.content_area, self.selected_db))
+            else:
+                QMessageBox.warning(self, "No Database Selected", "Please select a database from the Home page first.")
         elif item.text() == "Blank":
             self.content_label = QLabel("Blank Page", self.content_area)
             self.content_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #574740;")
             self.content_layout.addWidget(self.content_label)
 
 
+    def set_selected_db(self, db_name):
+        self.selected_db = db_name
 

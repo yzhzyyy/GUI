@@ -1,12 +1,12 @@
-# home_page.py
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QComboBox, QPushButton, QHBoxLayout, QMessageBox, QFrame, QLineEdit
+    QWidget, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QMessageBox, QFrame, QLineEdit
 )
-from PyQt5.QtCore import Qt, QSize
-
+from PyQt5.QtCore import Qt, QSize, pyqtSignal
 
 class HomePage(QWidget):
+    db_selected = pyqtSignal(str)  # Define signal
+
     def __init__(self, connection, parent=None):
         super().__init__(parent)
         self.connection = connection
@@ -30,8 +30,6 @@ class HomePage(QWidget):
 
         # back button with image
         back_button = QPushButton(self)
-        # back_button.setIcon(QIcon("icons/angle-double-left.png"))
-        # back_button.setIconSize(QSize(24, 24))
         back_button.setStyleSheet("""
                 QPushButton {
                     border: none;
@@ -123,7 +121,7 @@ class HomePage(QWidget):
                     color: #ffffff;
                 }
             """)
-            db_button.setFocusPolicy(Qt.StrongFocus)  # 设置焦点策略
+            db_button.setFocusPolicy(Qt.StrongFocus)
             db_button.clicked.connect(self.on_db_button_clicked)
             self.db_buttons.append(db_button)
             db_list_layout.addWidget(db_button)
@@ -131,8 +129,6 @@ class HomePage(QWidget):
         cursor.close()
 
         db_info_layout.addWidget(db_list_frame)
-
-
 
         # Select information display
         select_db_frame = QFrame(self)
@@ -165,9 +161,6 @@ class HomePage(QWidget):
         info_layout.addWidget(info_label)
         select_db_layout.addWidget(info_frame)
 
-
-
-
         select_db_label = QLabel("Selected database:", self)
         select_db_label.setStyleSheet("""
             font-size: 20px;
@@ -177,7 +170,6 @@ class HomePage(QWidget):
         """)
         select_db_label.setFixedHeight(40)
         select_db_layout.addWidget(select_db_label)
-
 
         self.db_textbox = QLineEdit(self)
         self.db_textbox.setAttribute(Qt.WA_MacShowFocusRect, 0)
@@ -223,8 +215,11 @@ class HomePage(QWidget):
 
     def connect_to_db(self):
         selected_db = self.db_textbox.text()
-        QMessageBox.information(self, "Database Selected", f"You have selected {selected_db} database.")
-        # Here you can implement further actions, such as updating the connection to use the selected database
+        if selected_db:
+            self.db_selected.emit(selected_db)  # Emit signal with the selected database name
+            QMessageBox.information(self, "Connection Successful", f"Connected to {selected_db} database.\nGo to TableView page for more details :)")
+        else:
+            QMessageBox.warning(self, "No Database Selected", "Please select or enter a database.")
 
     def go_back(self):
         self.parentWidget().setCurrentWidget(self.parentWidget().widget(0))
