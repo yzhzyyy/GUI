@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem,
     QLabel, QFrame, QSplitter, QSizePolicy, QSpacerItem, QPushButton
 )
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt
 from home_page import HomePage
 import mysql.connector
@@ -66,25 +66,30 @@ class DatabaseSelectionWindow(QWidget):
         # Add spacer to push user info to the bottom
         nav_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
+        # Add user icon at the top
+        user_icon = QLabel(self)
+        user_icon.setPixmap(
+            QPixmap("icons/portrait.png").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        user_icon.setAlignment(Qt.AlignCenter)
+        nav_layout.addWidget(user_icon)
+
         # Add user info at the bottom
         user_info_label = QLabel(f"User: {self.username}\nDatabase: {self.connection.database}")
-        print(self.username)
         user_info_label.setAlignment(Qt.AlignCenter)
-        user_info_label.setStyleSheet("color: #ffffff;")
+        user_info_label.setStyleSheet("color: #ffffff; font-size: 14px")
         nav_layout.addWidget(user_info_label)
 
         # Add logout button at the bottom
         logout_button = QPushButton('Logout', self)
         logout_button.setStyleSheet("""
                     QPushButton {
-                        background-color: rgba(165, 137, 120, 0.8);
                         color: #ffffff;
-                        border: none;
-                        border-radius: 20px;
+                        border-radius: 10px;
+                        border: 2px solid #ffffff;
                         padding: 10px;
                     }
                     QPushButton:hover {
-                        background-color: rgba(87, 71, 64, 0.8);
+                        background-color: #a58978;
                     }
                 """)
         logout_button.clicked.connect(self.logout)
@@ -129,15 +134,15 @@ class DatabaseSelectionWindow(QWidget):
             self.content_layout.addWidget(HomePage(self.connection, self.content_area))
         elif item.text() == "Widgets":
             self.content_label = QLabel("Widgets Page", self.content_area)
-            self.content_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #574740;")
+            self.content_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #574740;")
             self.content_layout.addWidget(self.content_label)
         elif item.text() == "TableView":
             self.content_label = QLabel("Table View Page", self.content_area)
-            self.content_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #574740;")
+            self.content_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #574740;")
             self.content_layout.addWidget(self.content_label)
         elif item.text() == "Blank":
             self.content_label = QLabel("Blank Page", self.content_area)
-            self.content_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #574740;")
+            self.content_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #574740;")
             self.content_layout.addWidget(self.content_label)
 
 
