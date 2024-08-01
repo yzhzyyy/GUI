@@ -28,21 +28,6 @@ class HomePage(QWidget):
         title_layout = QHBoxLayout(title_frame)
         title_layout.setContentsMargins(0, 0, 0, 0)
 
-        # back button with image
-        back_button = QPushButton(self)
-        back_button.setStyleSheet("""
-                QPushButton {
-                    border: none;
-                    border-image: url(icons/angle-double-left.png);
-                    background: none;
-                }
-                QPushButton:hover {
-                    border-image: url(icons/angle-double-left-hover.png);
-                }
-            """)
-        back_button.setFixedHeight(40)
-        back_button.clicked.connect(self.go_back)
-
         # Title
         title_label = QLabel("Home Page", self)
         title_label.setAlignment(Qt.AlignLeft)
@@ -54,7 +39,6 @@ class HomePage(QWidget):
         """)
         title_label.setFixedHeight(40)
         title_layout.setContentsMargins(0, 0, 0, 0)
-        title_layout.addWidget(back_button)
         title_layout.addWidget(title_label)
         title_layout.addStretch()
         main_layout.addWidget(title_frame)
@@ -221,5 +205,3 @@ class HomePage(QWidget):
         else:
             QMessageBox.warning(self, "No Database Selected", "Please select or enter a database.")
 
-    def go_back(self):
-        self.parentWidget().setCurrentWidget(self.parentWidget().widget(0))

@@ -11,12 +11,14 @@ from home_page import HomePage
 import mysql.connector
 
 class DatabaseSelectionWindow(QWidget):
+    db_selected = pyqtSignal(str)
+
     def __init__(self, connection, previous_window, username):
         super().__init__()
         self.connection = connection
         self.previous_window = previous_window
         self.username = username
-        self.selected_db = None
+        self.selected_db = "None"  # Default value for selected_db
         self.initUI()
 
     def initUI(self):
@@ -77,10 +79,10 @@ class DatabaseSelectionWindow(QWidget):
         nav_layout.addWidget(user_icon)
 
         # Add user info at the bottom
-        user_info_label = QLabel(f"User: {self.username}\nDatabase: {self.connection.database}")
-        user_info_label.setAlignment(Qt.AlignCenter)
-        user_info_label.setStyleSheet("color: #ffffff; font-size: 14px")
-        nav_layout.addWidget(user_info_label)
+        self.user_info_label = QLabel(f"User: {self.username}\nDatabase: {self.selected_db}")
+        self.user_info_label.setAlignment(Qt.AlignCenter)
+        self.user_info_label.setStyleSheet("color: #ffffff; font-size: 14px")
+        nav_layout.addWidget(self.user_info_label)
 
         # Add logout button at the bottom
         logout_button = QPushButton('Logout', self)
@@ -151,7 +153,6 @@ class DatabaseSelectionWindow(QWidget):
             self.content_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #574740;")
             self.content_layout.addWidget(self.content_label)
 
-
     def set_selected_db(self, db_name):
         self.selected_db = db_name
-
+        self.user_info_label.setText(f"User: {self.username}\nDatabase: {self.selected_db}")
