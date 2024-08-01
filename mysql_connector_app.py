@@ -20,6 +20,7 @@ class MySQLConnectorApp(QWidget):
         self.populate_defaults()
 
     def initUI(self):
+
         self.setWindowTitle('MySQL Connector')
         self.setGeometry(100, 100, 800, 400)  # 增大窗口尺寸
         self.setStyleSheet("background-color: #F9FBF5;")

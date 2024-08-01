@@ -39,6 +39,7 @@ class HomePage(QWidget):
         """)
         title_label.setFixedHeight(40)
         title_layout.setContentsMargins(0, 0, 0, 0)
+        # title_layout.addWidget(back_button)
         title_layout.addWidget(title_label)
         title_layout.addStretch()
         main_layout.addWidget(title_frame)

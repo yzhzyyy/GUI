@@ -18,7 +18,7 @@ class DatabaseSelectionWindow(QWidget):
         self.connection = connection
         self.previous_window = previous_window
         self.username = username
-        self.selected_db = "None"  # Default value for selected_db
+        self.selected_db = None  # Default value for selected_db
         self.initUI()
 
     def initUI(self):
@@ -139,12 +139,13 @@ class DatabaseSelectionWindow(QWidget):
             home_page = HomePage(self.connection, self.content_area)
             home_page.db_selected.connect(self.set_selected_db)  # Connect signal
             self.content_layout.addWidget(home_page)
+            print(self.selected_db)
         elif item.text() == "Widgets":
             self.content_label = QLabel("Widgets Page", self.content_area)
             self.content_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #574740;")
             self.content_layout.addWidget(self.content_label)
         elif item.text() == "TableView":
-            if self.selected_db:
+            if self.selected_db is not None:
                 self.content_layout.addWidget(TableViewPage(self.connection, self.content_area, self.selected_db))
             else:
                 QMessageBox.warning(self, "No Database Selected", "Please select a database from the Home page first.")
