@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt, pyqtSignal
 
+from gitclone.key_view_page import KeyViewPage
 from table_view_page import TableViewPage
 from home_page import HomePage
 import mysql.connector
@@ -19,6 +20,7 @@ class DatabaseSelectionWindow(QWidget):
         self.previous_window = previous_window
         self.username = username
         self.selected_db = None  # Default value for selected_db
+        self.selected_table = None  # Default value for selected_table
         self.initUI()
 
     def initUI(self):
@@ -45,7 +47,7 @@ class DatabaseSelectionWindow(QWidget):
                 height: 40px;
                 padding-left: 10px;
                 outline: none;
-                border-radius: 20px;
+                border: none;
             }
             QListWidget::item:hover {
                 background-color: #a58978;
@@ -57,13 +59,13 @@ class DatabaseSelectionWindow(QWidget):
             }
         """)
         self.home_item = self.create_nav_item("Home", "icons/home.png")
-        self.widgets_item = self.create_nav_item("Widgets", "icons/database.png")
-        self.tableview_item = self.create_nav_item("TableView", "icons/table.png")
+        self.tableview_item = self.create_nav_item("Table View", "icons/table.png")
+        self.keyview_item = self.create_nav_item("Key View", "icons/database.png")
         self.blank_item = self.create_nav_item("Blank", "icons/key_analysis.png")
 
         self.nav_list.addItem(self.home_item)
-        self.nav_list.addItem(self.widgets_item)
         self.nav_list.addItem(self.tableview_item)
+        self.nav_list.addItem(self.keyview_item)
         self.nav_list.addItem(self.blank_item)
         self.nav_list.itemClicked.connect(self.on_nav_item_clicked)
         nav_layout.addWidget(self.nav_list)
@@ -89,7 +91,6 @@ class DatabaseSelectionWindow(QWidget):
         logout_button.setStyleSheet("""
                     QPushButton {
                         color: #ffffff;
-                        border-radius: 10px;
                         border: 2px solid #ffffff;
                         padding: 10px;
                     }
@@ -105,7 +106,7 @@ class DatabaseSelectionWindow(QWidget):
         # Create the right content area
         self.content_area = QFrame()
         self.content_layout = QVBoxLayout(self.content_area)
-        self.content_area.setStyleSheet("background-color: #FFFFFF; border-radius: 30px;")
+        self.content_area.setStyleSheet("background-color: #FFFFFF; border: none;")
         self.content_label = QLabel("Welcome to MySQL Connector Dashboard", self.content_area)
         self.content_label.setStyleSheet("font-size: 20px; font-weight: bold; color: #574740;")
         self.content_layout.addWidget(self.content_label)
@@ -135,20 +136,29 @@ class DatabaseSelectionWindow(QWidget):
             widget = self.content_layout.itemAt(i).widget()
             if widget:
                 widget.deleteLater()
+
         if item.text() == "Home":
             home_page = HomePage(self.connection, self.content_area)
             home_page.db_selected.connect(self.set_selected_db)  # Connect signal
             self.content_layout.addWidget(home_page)
             print(self.selected_db)
-        elif item.text() == "Widgets":
-            self.content_label = QLabel("Widgets Page", self.content_area)
-            self.content_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #574740;")
-            self.content_layout.addWidget(self.content_label)
-        elif item.text() == "TableView":
+
+        elif item.text() == "Table View":
             if self.selected_db is not None:
-                self.content_layout.addWidget(TableViewPage(self.connection, self.content_area, self.selected_db))
+                table_view_page = TableViewPage(self.connection, self.content_area, self.selected_db)
+                table_view_page.table_selected.connect(self.set_selected_table)  # Connect signal
+                self.content_layout.addWidget(table_view_page)
             else:
                 QMessageBox.warning(self, "No Database Selected", "Please select a database from the Home page first.")
+
+        elif item.text() == "Key View":
+            if self.selected_db and self.selected_table:
+                self.content_layout.addWidget(
+                    KeyViewPage(self.connection, self.content_area, self.selected_db, self.selected_table))
+            else:
+                QMessageBox.warning(self, "No Table Selected",
+                                    "Please select a table from the Table View page first.")
+
         elif item.text() == "Blank":
             self.content_label = QLabel("Blank Page", self.content_area)
             self.content_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #574740;")
@@ -157,3 +167,6 @@ class DatabaseSelectionWindow(QWidget):
     def set_selected_db(self, db_name):
         self.selected_db = db_name
         self.user_info_label.setText(f"User: {self.username}\nDatabase: {self.selected_db}")
+
+    def set_selected_table(self, table_name):
+        self.selected_table = table_name

@@ -1,6 +1,6 @@
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QMessageBox, QFrame, QLineEdit
+    QWidget, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QMessageBox, QFrame, QLineEdit, QScrollArea, QVBoxLayout
 )
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
 
@@ -39,7 +39,6 @@ class HomePage(QWidget):
         """)
         title_label.setFixedHeight(40)
         title_layout.setContentsMargins(0, 0, 0, 0)
-        # title_layout.addWidget(back_button)
         title_layout.addWidget(title_label)
         title_layout.addStretch()
         main_layout.addWidget(title_frame)
@@ -57,16 +56,15 @@ class HomePage(QWidget):
                 padding: 10px;
                 background: #F6F6F1;
                 border: none;
-                border-radius: 10px;
             }
         """)
         db_list_layout = QVBoxLayout(db_list_frame)
         db_list_layout.setContentsMargins(0, 0, 0, 0)
+        db_list_frame.setFixedWidth(275)
         db_list_layout.setSpacing(0)
 
         # Database name with icon
         db_name_layout = QHBoxLayout()
-        db_name_layout.setSpacing(0)
         db_name_icon = QLabel(self)
         db_name_icon.setPixmap(
             QPixmap("icons/notebook.png").scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation))
@@ -82,37 +80,17 @@ class HomePage(QWidget):
         db_name_layout.addWidget(db_name_label)
         db_list_layout.addLayout(db_name_layout)
 
-        self.db_buttons = []
-        cursor = self.connection.cursor()
-        cursor.execute("SHOW DATABASES")
-        databases = cursor.fetchall()
-        for db in databases:
-            db_button = QPushButton(db[0], self)
-            db_button.setStyleSheet("""
-                QPushButton {
-                    color: #574740;
-                    border: none;
-                    border-radius: 5px;
-                    padding: 10px 40px;
-                    font-size: 16px;
-                    text-align: left;
-                }
-                QPushButton:hover {
-                    background-color: #C39E83;
-                    color: #ffffff;
-                }
-                QPushButton:focus {
-                    background-color: #C39E83;
-                    color: #ffffff;
-                }
-            """)
-            db_button.setFocusPolicy(Qt.StrongFocus)
-            db_button.clicked.connect(self.on_db_button_clicked)
-            self.db_buttons.append(db_button)
-            db_list_layout.addWidget(db_button)
+        # Database name list in scroll area
+        scroll_area = QScrollArea(self)
+        scroll_area.setWidgetResizable(True)
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+        scroll_content.setStyleSheet("QWidget{background-color: #F6F6F1; padding: 0px; margin: 0px;}")
+        scroll_area.setWidget(scroll_content)
+        scroll_area.setFixedHeight(300)
 
-        cursor.close()
-
+        self.load_databases(scroll_layout)
+        db_list_layout.addWidget(scroll_area)
         db_info_layout.addWidget(db_list_frame)
 
         # Select information display
@@ -125,16 +103,16 @@ class HomePage(QWidget):
         info_frame.setFrameShape(QFrame.StyledPanel)
         info_frame.setStyleSheet("""
                     QFrame {
-                        background: #F6F6F1;
-                        border-radius: 10px;
+                        background-color: #F6F6F1;
+                        border: none;
                         padding: 5px 10px;
                     }
                 """)
         info_layout = QVBoxLayout(info_frame)
         info_label = QLabel(
-            "In this section, you can select the database you want to connect to from the left side. "
-            "Alternatively, you can manually enter the database name on the right side. "
-            "Then click the 'Connect' button to establish the connection. "
+            "<b>In this section</b>, you can <span style='color:#A58978; font-size: 24px;'>SELECT THE DATABASE</span> you want to connect to from the left side. "
+            "Alternatively, you can <span style='color:#A58978;'>manually enter the database name</span> on the right side. "
+            "Then click the '<span style='color:#A58978;'>Connect</span>' button to establish the connection. "
             "Once the connection is successful, you will be redirected to the table page.",
             self
         )
@@ -162,7 +140,6 @@ class HomePage(QWidget):
             QLineEdit {
                 background-color: #F6F6F1;
                 border: 1px solid #C39E83;
-                border-radius: 5px;
                 padding: 5px;
                 font-size: 16px;
                 color: #574740;
@@ -180,7 +157,6 @@ class HomePage(QWidget):
                 background-color: #a58978;
                 color: #ffffff;
                 border: none;
-                border-radius: 5px;
                 padding: 5px;
             }
             QPushButton:hover {
@@ -190,13 +166,32 @@ class HomePage(QWidget):
         select_db_layout.addWidget(connect_button)
 
         db_info_layout.addWidget(select_db_frame)
-
         main_layout.addWidget(db_info_frame)
+        self.setLayout(main_layout)
 
-    def on_db_button_clicked(self):
-        sender = self.sender()
-        selected_db = sender.text()
-        self.db_textbox.setText(selected_db)
+    def load_databases(self, layout):
+        cursor = self.connection.cursor()
+        cursor.execute("SHOW DATABASES")
+        databases = cursor.fetchall()
+        for db in databases:
+            db_label = QLabel(db[0], self)
+            db_label.setStyleSheet("""
+                QLabel {
+                    color: #574740;
+                    font-size: 16px;
+                    padding: 5px 10px;
+                }
+                QLabel:hover {
+                    background-color: #C39E83;
+                    color: #ffffff;
+                }
+            """)
+            db_label.mousePressEvent = lambda event, db=db[0]: self.on_db_label_clicked(db)
+            layout.addWidget(db_label)
+        cursor.close()
+
+    def on_db_label_clicked(self, db_name):
+        self.db_textbox.setText(db_name)
 
     def connect_to_db(self):
         selected_db = self.db_textbox.text()
@@ -205,4 +200,3 @@ class HomePage(QWidget):
             QMessageBox.information(self, "Connection Successful", f"Connected to {selected_db} database.\nGo to TableView page for more details :)")
         else:
             QMessageBox.warning(self, "No Database Selected", "Please select or enter a database.")
-

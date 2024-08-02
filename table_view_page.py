@@ -1,11 +1,12 @@
 import os
-
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QHBoxLayout, QComboBox, QPushButton
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 
 class TableViewPage(QWidget):
+    table_selected = pyqtSignal(str)  # Define signal
+
     def __init__(self, connection, parent=None, database=None):
         super().__init__(parent)
         self.connection = connection
@@ -14,21 +15,6 @@ class TableViewPage(QWidget):
 
     def initUI(self):
         main_layout = QVBoxLayout(self)
-
-        # # 判断用户是否选择了database
-        # if self.database is None:
-        #     title_label = QLabel("Please select a database first.", self)
-        #     title_label.setAlignment(Qt.AlignCenter)
-        #     title_label.setStyleSheet("""
-        #                         font-size: 34px;
-        #                         font-weight: bold;
-        #                         color: #A58978;
-        #                         padding: 0px 10px;
-        #                     """)
-        #     title_label.setFixedHeight(40)
-        #     main_layout.addWidget(title_label)
-        #     self.setLayout(main_layout)
-        #     return
 
         title_label = QLabel(f"Tables in Database: {self.database}", self)
         title_label.setAlignment(Qt.AlignLeft)
@@ -142,6 +128,7 @@ class TableViewPage(QWidget):
         body_layout.addWidget(self.attribute_stats_widget, 3)
 
         main_layout.addWidget(body_widget)
+        self.setLayout(main_layout)
 
         # Default to first table
         self.default_to_first_table()
@@ -161,6 +148,7 @@ class TableViewPage(QWidget):
     def on_select_table_button_clicked(self):
         selected_table = self.table_combo_box.currentText()
         self.load_table_data(selected_table)
+        self.table_selected.emit(selected_table)  # Emit signal with selected table
 
     def default_to_first_table(self):
         if self.table_combo_box.count() > 0:
