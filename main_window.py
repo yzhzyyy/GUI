@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt, pyqtSignal
 
-from gitclone.key_view_page import KeyViewPage
+from key_view_page import KeyViewPage
 from table_view_page import TableViewPage
 from home_page import HomePage
 import mysql.connector
